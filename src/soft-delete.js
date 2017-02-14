@@ -1,7 +1,7 @@
 import _debug from './debug';
 const debug = _debug();
 
-export default (Model, { deletedAt = 'deletedAt', _isDeleted = 'isDeleted', scrub = false }) => {
+export default (Model, { deletedAt = 'deletedAt', _isDeleted = '_isDeleted', scrub = false }) => {
   debug('SoftDelete mixin for Model %s', Model.modelName);
 
   debug('options', { deletedAt, _isDeleted, scrub });
