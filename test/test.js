@@ -273,4 +273,34 @@ describe('Loopback softDelete mixin', () => {
         });
     });
   });
+
+  describe('options', () => {
+    it('should work with custom field Name for deleted', () => {
+      const Book = dataSource.createModel('options_1',
+        { id: {type: Number, generated: false, id: true}, name: String, type: String },
+        { mixins: { SoftDelete: {_isDeleted: 'customDeleteField'} } }
+      );
+      
+      const booksCreated = [
+        Book.create({ id: 1, name: 'book 1', type: 'fiction'}),
+        Book.create({ id: 2, name: 'book 2', type: 'fiction'}),
+        Book.create({ id: 3, name: 'book 3', type: 'non-fiction'}),
+      ];
+
+      return Promise.all(booksCreated)
+        .then(() => Book.destroyAll({ type: 'non-fiction' }))
+        .then(() => Book.find())
+        .then(books => {
+          assert.lengthOf(books, 2);
+          assert.equal(books[0].id, 1);
+          assert.equal(books[1].id, 2);
+        })
+        .then(() => Book.find(includeDeleted))
+        .then(([book1, book2, book3]) => {
+          assert.isDefined(book3.deletedAt);
+          assert.isDefined(book3.customDeleteField);
+        });
+  
+    });
+  });
 });
