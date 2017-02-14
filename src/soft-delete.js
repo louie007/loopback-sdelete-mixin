@@ -1,7 +1,7 @@
 import _debug from './debug';
 const debug = _debug();
 
-export default (Model, { deletedAt = 'deletedAt', _isDeleted = '_isDeleted', scrub = false }) => {
+export default (Model, { deletedAt = 'deletedAt', _isDeleted = 'isDeleted', scrub = false }) => {
   debug('SoftDelete mixin for Model %s', Model.modelName);
 
   debug('options', { deletedAt, _isDeleted, scrub });
@@ -18,8 +18,8 @@ export default (Model, { deletedAt = 'deletedAt', _isDeleted = '_isDeleted', scr
     scrubbed = propertiesToScrub.reduce((obj, prop) => ({ ...obj, [prop]: null }), {});
   }
 
-  Model.defineProperty(deletedAt, {type: Date, required: false});
-  Model.defineProperty(_isDeleted, {type: Boolean, required: true, default: false});
+  Model.defineProperty(deletedAt, { type: Date, required: false });
+  Model.defineProperty(_isDeleted, { type: Boolean, required: true, default: false });
 
   Model.destroyAll = function softDestroyAll(where, cb) {
     return Model.updateAll(where, { ...scrubbed, [deletedAt]: new Date(), [_isDeleted]: true })
@@ -51,7 +51,7 @@ export default (Model, { deletedAt = 'deletedAt', _isDeleted = '_isDeleted', scr
   Model.prototype.delete = Model.prototype.destroy;
 
   // Emulate default scope but with more flexibility.
-  const queryNonDeleted = {_isDeleted: false};
+  const queryNonDeleted = { _isDeleted: false };
 
   const _findOrCreate = Model.findOrCreate;
   Model.findOrCreate = function findOrCreateDeleted(query = {}, ...rest) {
@@ -59,7 +59,7 @@ export default (Model, { deletedAt = 'deletedAt', _isDeleted = '_isDeleted', scr
       if (!query.where) {
         query.where = queryNonDeleted;
       } else {
-        query.where = { and: [ query.where, queryNonDeleted ] };
+        query.where = { and: [query.where, queryNonDeleted] };
       }
     }
 
@@ -72,7 +72,7 @@ export default (Model, { deletedAt = 'deletedAt', _isDeleted = '_isDeleted', scr
       if (!query.where) {
         query.where = queryNonDeleted;
       } else {
-        query.where = { and: [ query.where, queryNonDeleted ] };
+        query.where = { and: [query.where, queryNonDeleted] };
       }
     }
 
@@ -82,14 +82,14 @@ export default (Model, { deletedAt = 'deletedAt', _isDeleted = '_isDeleted', scr
   const _count = Model.count;
   Model.count = function countDeleted(where = {}, ...rest) {
     // Because count only receives a 'where', there's nowhere to ask for the deleted entities.
-    const whereNotDeleted = { and: [ where, queryNonDeleted ] };
+    const whereNotDeleted = { and: [where, queryNonDeleted] };
     return _count.call(Model, whereNotDeleted, ...rest);
   };
 
   const _update = Model.update;
   Model.update = Model.updateAll = function updateDeleted(where = {}, ...rest) {
     // Because update/updateAll only receives a 'where', there's nowhere to ask for the deleted entities.
-    const whereNotDeleted = { and: [ where, queryNonDeleted ] };
+    const whereNotDeleted = { and: [where, queryNonDeleted] };
     return _update.call(Model, whereNotDeleted, ...rest);
   };
 };
