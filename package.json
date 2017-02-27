@@ -43,7 +43,7 @@
     "gulp": "^3.9.0",
     "gulp-babel": "^6.1.0",
     "gulp-sourcemaps": "^1.6.0",
-    "loopback": "3.2.1",
+    "loopback": "3.3.0",
     "loopback-boot": "2.x",
     "mocha": "^2.3.4"
   }
