@@ -1,6 +1,18 @@
 import _debug from './debug';
 const debug = _debug();
 
+function createPromiseCallback() {
+  var cb;
+  var promise = new Promise(function (resolve, reject) {
+    cb = function (err, data) {
+      if (err) return reject(err);
+      return resolve(data);
+    };
+  });
+  cb.promise = promise;
+  return cb;
+}
+
 export default (Model, { deletedAt = 'deletedAt', _isDeleted = '_isDeleted', scrub = false }) => {
   debug('SoftDelete mixin for Model %s', Model.modelName);
 
@@ -21,30 +33,49 @@ export default (Model, { deletedAt = 'deletedAt', _isDeleted = '_isDeleted', scr
   Model.defineProperty(deletedAt, { type: Date, required: false });
   Model.defineProperty(_isDeleted, { type: Boolean, required: true, default: false });
 
-  Model.destroyAll = function softDestroyAll(where, cb) {
-    return Model.updateAll(where, { ...scrubbed, [deletedAt]: new Date(), [_isDeleted]: true })
-      .then(result => (typeof cb === 'function') ? cb(null, result) : result)
-      .catch(error => (typeof cb === 'function') ? cb(error) : Promise.reject(error));
+  Model.destroyAll = function softDestroyAll(where, options, cb) {
+    let callback = (cb === undefined && typeof options === 'function') ? options : cb;
+    callback = callback || createPromiseCallback();
+    if (typeof options === 'function') {
+      options = {}
+    }
+    Model.updateAll(where, { ...scrubbed, [deletedAt]: new Date(), [_isDeleted]: true }, options)
+      .then(result => callback(null, result))
+      .catch(error => callback(error));
+
+    return callback.promise;
   };
 
   Model.remove = Model.destroyAll;
   Model.deleteAll = Model.destroyAll;
 
-  Model.destroyById = function softDestroyById(id, cb) {
-    return Model.updateAll({ id: id }, { ...scrubbed, [deletedAt]: new Date(), [_isDeleted]: true })
-      .then(result => (typeof cb === 'function') ? cb(null, result) : result)
-      .catch(error => (typeof cb === 'function') ? cb(error) : Promise.reject(error));
+  Model.destroyById = function softDestroyById(id, options, cb) {
+    let callback = (cb === undefined && typeof options === 'function') ? options : cb;
+    callback = callback || createPromiseCallback();
+    if (typeof options === 'function') {
+      options = {}
+    }
+    Model.updateAll({ id: id }, { ...scrubbed, [deletedAt]: new Date(), [_isDeleted]: true }, options)
+      .then(result => callback(null, result))
+      .catch(error => callback(error));
+
+    return callback.promise;
   };
 
   Model.removeById = Model.destroyById;
   Model.deleteById = Model.destroyById;
 
   Model.prototype.destroy = function softDestroy(options, cb) {
-    const callback = (cb === undefined && typeof options === 'function') ? options : cb;
+    let callback = (cb === undefined && typeof options === 'function') ? options : cb;
+    callback = callback || createPromiseCallback();
+    if (typeof options === 'function') {
+      options = {}
+    }
+    this.updateAttributes({ ...scrubbed, [deletedAt]: new Date(), [_isDeleted]: true }, options)
+      .then(result => callback(null, result))
+      .catch(error => callback(error));
 
-    return this.updateAttributes({ ...scrubbed, [deletedAt]: new Date(), [_isDeleted]: true })
-      .then(result => (typeof cb === 'function') ? callback(null, result) : result)
-      .catch(error => (typeof cb === 'function') ? callback(error) : Promise.reject(error));
+    return callback.promise;
   };
 
   Model.prototype.remove = Model.prototype.destroy;
