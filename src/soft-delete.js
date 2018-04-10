@@ -2,9 +2,9 @@ import _debug from './debug';
 const debug = _debug();
 
 function createPromiseCallback() {
-  var cb;
-  var promise = new Promise(function (resolve, reject) {
-    cb = function (err, data) {
+  let cb;
+  const promise = new Promise((resolve, reject) => {
+    cb = (err, data) => {
       if (err) return reject(err);
       return resolve(data);
     };
@@ -36,10 +36,11 @@ export default (Model, { deletedAt = 'deletedAt', _isDeleted = '_isDeleted', scr
   Model.destroyAll = function softDestroyAll(where, options, cb) {
     let callback = (cb === undefined && typeof options === 'function') ? options : cb;
     callback = callback || createPromiseCallback();
+    let _options = options;
     if (typeof options === 'function') {
-      options = {}
+      _options = {};
     }
-    Model.updateAll(where, { ...scrubbed, [deletedAt]: new Date(), [_isDeleted]: true }, options)
+    Model.updateAll(where, { ...scrubbed, [deletedAt]: new Date(), [_isDeleted]: true }, _options)
       .then(result => callback(null, result))
       .catch(error => callback(error));
 
@@ -52,10 +53,11 @@ export default (Model, { deletedAt = 'deletedAt', _isDeleted = '_isDeleted', scr
   Model.destroyById = function softDestroyById(id, options, cb) {
     let callback = (cb === undefined && typeof options === 'function') ? options : cb;
     callback = callback || createPromiseCallback();
+    let _options = options;
     if (typeof options === 'function') {
-      options = {}
+      _options = {};
     }
-    Model.updateAll({ id: id }, { ...scrubbed, [deletedAt]: new Date(), [_isDeleted]: true }, options)
+    Model.updateAll({ id: id }, { ...scrubbed, [deletedAt]: new Date(), [_isDeleted]: true }, _options)
       .then(result => callback(null, result))
       .catch(error => callback(error));
 
@@ -68,10 +70,11 @@ export default (Model, { deletedAt = 'deletedAt', _isDeleted = '_isDeleted', scr
   Model.prototype.destroy = function softDestroy(options, cb) {
     let callback = (cb === undefined && typeof options === 'function') ? options : cb;
     callback = callback || createPromiseCallback();
+    let _options = options;
     if (typeof options === 'function') {
-      options = {}
+      _options = {};
     }
-    this.updateAttributes({ ...scrubbed, [deletedAt]: new Date(), [_isDeleted]: true }, options)
+    this.updateAttributes({ ...scrubbed, [deletedAt]: new Date(), [_isDeleted]: true }, _options)
       .then(result => callback(null, result))
       .catch(error => callback(error));
 
