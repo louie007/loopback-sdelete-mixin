@@ -92,7 +92,7 @@ export default (Model, { deletedAt = 'deletedAt', _isDeleted = '_isDeleted', scr
   Model.findOrCreate = function findOrCreateDeleted(query = {}, ...rest) {
     if (!query.deleted) {
       if (!query.where) {
-        query.where = queryNonDeleted;
+        query.where = Object.assign({}, queryNonDeleted);
       } else {
         query.where = { and: [query.where, queryNonDeleted] };
       }
@@ -105,7 +105,7 @@ export default (Model, { deletedAt = 'deletedAt', _isDeleted = '_isDeleted', scr
   Model.find = function findDeleted(query = {}, ...rest) {
     if (!query.deleted) {
       if (!query.where) {
-        query.where = queryNonDeleted;
+        query.where = Object.assign({}, queryNonDeleted);
       } else {
         query.where = { and: [query.where, queryNonDeleted] };
       }
