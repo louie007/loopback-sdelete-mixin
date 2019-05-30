@@ -1,6 +1,6 @@
 {
-  "name": "loopback-sdelete-mixin",
-  "version": "0.3.0",
+  "name": "loopback-softdel-mixin",
+  "version": "0.3.1",
   "description": "A mixin to automatically generate created and updated Date attributes for loopback Models",
   "main": "index.js",
   "scripts": {
@@ -18,9 +18,14 @@
     "delete"
   ],
   "author": "JumpByte",
+  "contributors": [
+    {
+      "name": "Louis Bao"
+    }
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/jumpbytehq/loopback-sdelete-mixin"
+    "url": "https://github.com/louie007/loopback-softdel-mixin"
   },
   "dependencies": {
     "babel-runtime": "^6.3.13",
